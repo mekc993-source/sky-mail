@@ -1,0 +1,291 @@
+name: Build SKY MAIL APK
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Ambil kode proyek
+        uses: actions/checkout@v4
+
+      - name: Siapkan Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+
+      - name: Siapkan Gradle
+        uses: gradle/actions/setup-gradle@v4
+        with:
+          gradle-version: '8.9'
+
+      - name: Buat proyek Android SKY MAIL
+        run: |
+          mkdir -p app/src/main/java/com/sky/mail
+          mkdir -p app/src/main
+
+          cat > settings.gradle.kts <<'EOF'
+          pluginManagement {
+              repositories {
+                  google()
+                  mavenCentral()
+                  gradlePluginPortal()
+              }
+          }
+          dependencyResolutionManagement {
+              repositoriesMode.set(RepositoriesMode.FAIL_ON_PROJECT_REPOS)
+              repositories {
+                  google()
+                  mavenCentral()
+              }
+          }
+          rootProject.name = "SKY MAIL"
+          include(":app")
+          EOF
+
+          cat > build.gradle.kts <<'EOF'
+          plugins {
+              id("com.android.application") version "8.7.3" apply false
+          }
+          EOF
+
+          cat > app/build.gradle.kts <<'EOF'
+          plugins {
+              id("com.android.application")
+          }
+          android {
+              namespace = "com.sky.mail"
+              compileSdk = 35
+              defaultConfig {
+                  applicationId = "com.sky.mail"
+                  minSdk = 23
+                  targetSdk = 28
+                  versionCode = 2
+                  versionName = "1.1"
+              }
+          }
+          EOF
+
+          cat > app/src/main/AndroidManifest.xml <<'EOF'
+          <manifest xmlns:android="http://schemas.android.com/apk/res/android">
+              <application
+                  android:theme="@android:style/Theme.Material.Light.NoActionBar"
+                  android:label="SKY MAIL"
+                  android:usesCleartextTraffic="false">
+                  <activity
+                      android:name=".MainActivity"
+                      android:exported="true">
+                      <intent-filter>
+                          <action android:name="android.intent.action.MAIN"/>
+                          <category android:name="android.intent.category.LAUNCHER"/>
+                      </intent-filter>
+                  </activity>
+              </application>
+          </manifest>
+          EOF
+
+          cat > app/src/main/java/com/sky/mail/MainActivity.java <<'EOF'
+          package com.sky.mail;
+
+          import android.app.Activity;
+          import android.os.Bundle;
+          import android.graphics.Color;
+          import android.graphics.Typeface;
+          import android.graphics.drawable.GradientDrawable;
+          import android.content.Intent;
+          import android.net.Uri;
+          import android.view.Gravity;
+          import android.view.View;
+          import android.widget.LinearLayout;
+          import android.widget.ScrollView;
+          import android.widget.TextView;
+          import android.widget.Button;
+
+          public class MainActivity extends Activity {
+              private final int blue = Color.rgb(37, 99, 235);
+              private final int navy = Color.rgb(20, 43, 92);
+              private final int ink = Color.rgb(31, 41, 55);
+              private final int muted = Color.rgb(103, 115, 135);
+              private final int pale = Color.rgb(245, 248, 255);
+
+              private GradientDrawable shape(int color, int radius) {
+                  GradientDrawable d = new GradientDrawable();
+                  d.setColor(color);
+                  d.setCornerRadius(radius);
+                  return d;
+              }
+
+              private TextView text(String value, int size, int color, boolean bold) {
+                  TextView t = new TextView(this);
+                  t.setText(value);
+                  t.setTextSize(size);
+                  t.setTextColor(color);
+                  if (bold) t.setTypeface(Typeface.DEFAULT, Typeface.BOLD);
+                  return t;
+              }
+
+              private LinearLayout column() {
+                  LinearLayout l = new LinearLayout(this);
+                  l.setOrientation(LinearLayout.VERTICAL);
+                  return l;
+              }
+
+              private LinearLayout.LayoutParams lp(int w, int h) {
+                  return new LinearLayout.LayoutParams(w, h);
+              }
+
+              private Button actionButton(String label, int background, int foreground) {
+                  Button b = new Button(this);
+                  b.setText(label);
+                  b.setAllCaps(false);
+                  b.setTextSize(16);
+                  b.setTypeface(Typeface.DEFAULT, Typeface.BOLD);
+                  b.setTextColor(foreground);
+                  b.setBackground(shape(background, 24));
+                  b.setPadding(20, 12, 20, 12);
+                  return b;
+              }
+
+              @Override
+              public void onCreate(Bundle state) {
+                  super.onCreate(state);
+
+                  ScrollView scroll = new ScrollView(this);
+                  scroll.setFillViewport(true);
+                  scroll.setBackgroundColor(pale);
+
+                  LinearLayout page = column();
+                  page.setPadding(24, 28, 24, 28);
+                  scroll.addView(page);
+
+                  LinearLayout hero = column();
+                  hero.setPadding(24, 28, 24, 28);
+                  hero.setBackground(new GradientDrawable(
+                      GradientDrawable.Orientation.TL_BR,
+                      new int[] { blue, Color.rgb(78, 133, 250) }));
+                  hero.setCornerRadius(28);
+
+                  TextView logo = text("✉  SKY MAIL", 29, Color.WHITE, true);
+                  logo.setGravity(Gravity.CENTER);
+                  hero.addView(logo);
+
+                  TextView tagline = text("Semua email, satu tempat.", 17,
+                      Color.WHITE, false);
+                  tagline.setGravity(Gravity.CENTER);
+                  LinearLayout.LayoutParams tagLp = lp(-1, -2);
+                  tagLp.topMargin = 12;
+                  hero.addView(tagline, tagLp);
+
+                  TextView pill = text("EMAIL LEBIH RAPI, HARI LEBIH MUDAH", 10,
+                      Color.WHITE, true);
+                  pill.setGravity(Gravity.CENTER);
+                  LinearLayout.LayoutParams pillLp = lp(-1, -2);
+                  pillLp.topMargin = 18;
+                  hero.addView(pill, pillLp);
+
+                  page.addView(hero);
+
+                  TextView section = text("Mulai dari sini", 21, ink, true);
+                  LinearLayout.LayoutParams sectionLp = lp(-1, -2);
+                  sectionLp.topMargin = 28;
+                  sectionLp.bottomMargin = 6;
+                  page.addView(section, sectionLp);
+
+                  TextView helper = text("Pilih layanan email yang ingin lu buka.",
+                      14, muted, false);
+                  LinearLayout.LayoutParams helperLp = lp(-1, -2);
+                  helperLp.bottomMargin = 16;
+                  page.addView(helper, helperLp);
+
+                  LinearLayout googleCard = column();
+                  googleCard.setPadding(16, 14, 16, 14);
+                  googleCard.setBackground(shape(Color.WHITE, 22));
+                  googleCard.setElevation(3);
+
+                  TextView googleTitle = text("Gmail / Google", 17, ink, true);
+                  googleCard.addView(googleTitle);
+                  TextView googleSub = text("Masuk atau kelola akun Google lu.",
+                      13, muted, false);
+                  LinearLayout.LayoutParams subLp = lp(-1, -2);
+                  subLp.topMargin = 4;
+                  subLp.bottomMargin = 10;
+                  googleCard.addView(googleSub, subLp);
+
+                  Button add = actionButton("Tambah / buka akun Google", blue,
+                      Color.WHITE);
+                  googleCard.addView(add, lp(-1, -2));
+                  add.setOnClickListener(v -> {
+                      Intent i = new Intent(Intent.ACTION_VIEW,
+                          Uri.parse("https://accounts.google.com/"));
+                      startActivity(i);
+                  });
+                  page.addView(googleCard);
+
+                  LinearLayout.LayoutParams outlookCardLp = lp(-1, -2);
+                  outlookCardLp.topMargin = 14;
+                  LinearLayout outlookCard = column();
+                  outlookCard.setPadding(16, 14, 16, 14);
+                  outlookCard.setBackground(shape(Color.WHITE, 22));
+                  outlookCard.setElevation(3);
+
+                  TextView outlookTitle = text("Outlook", 17, ink, true);
+                  outlookCard.addView(outlookTitle);
+                  TextView outlookSub = text("Buka email Microsoft Outlook.",
+                      13, muted, false);
+                  LinearLayout.LayoutParams outlookSubLp = lp(-1, -2);
+                  outlookSubLp.topMargin = 4;
+                  outlookSubLp.bottomMargin = 10;
+                  outlookCard.addView(outlookSub, outlookSubLp);
+
+                  Button outlook = actionButton("Buka Outlook",
+                      Color.rgb(230, 238, 255), blue);
+                  outlookCard.addView(outlook, lp(-1, -2));
+                  outlook.setOnClickListener(v -> startActivity(
+                      new Intent(Intent.ACTION_VIEW,
+                          Uri.parse("https://outlook.live.com/"))));
+                  page.addView(outlookCard, outlookCardLp);
+
+                  LinearLayout info = column();
+                  info.setPadding(16, 16, 16, 16);
+                  info.setBackground(shape(Color.rgb(232, 240, 255), 20));
+                  LinearLayout.LayoutParams infoLp = lp(-1, -2);
+                  infoLp.topMargin = 22;
+                  TextView infoTitle = text("Segera hadir di SKY MAIL", 16, navy, true);
+                  info.addView(infoTitle);
+                  TextView infoBody = text(
+                      "Inbox gabungan untuk beberapa akun sedang direncanakan. " +
+                      "Saat ini tombol membuka layanan resmi masing-masing. " +
+                      "Jangan masukkan password email di luar halaman resmi penyedia.",
+                      13, ink, false);
+                  LinearLayout.LayoutParams bodyLp = lp(-1, -2);
+                  bodyLp.topMargin = 8;
+                  info.addView(infoBody, bodyLp);
+                  page.addView(info, infoLp);
+
+                  TextView footer = text("SKY MAIL  •  Versi 1.1", 12, muted, false);
+                  footer.setGravity(Gravity.CENTER);
+                  LinearLayout.LayoutParams footerLp = lp(-1, -2);
+                  footerLp.topMargin = 22;
+                  page.addView(footer, footerLp);
+
+                  setContentView(scroll);
+              }
+          }
+          EOF
+
+      - name: Build APK
+        run: gradle --no-daemon assembleDebug
+
+      - name: Simpan APK
+        uses: actions/upload-artifact@v4
+        with:
+          name: SKY-MAIL-APK
+          path: app/build/outputs/apk/debug/app-debug.apk
+          if-no-files-found: error
