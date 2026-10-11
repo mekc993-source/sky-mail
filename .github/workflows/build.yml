@@ -1,0 +1,173 @@
+
+name: Build SKY MAIL APK
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Ambil kode proyek
+        uses: actions/checkout@v4
+
+      - name: Siapkan Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+
+      - name: Siapkan Gradle
+        uses: gradle/actions/setup-gradle@v4
+        with:
+          gradle-version: '8.9'
+
+      - name: Buat proyek Android SKY MAIL
+        run: |
+          mkdir -p app/src/main/java/com/sky/mail
+          mkdir -p app/src/main
+
+          cat > settings.gradle.kts <<'EOF'
+          pluginManagement {
+              repositories {
+                  google()
+                  mavenCentral()
+                  gradlePluginPortal()
+              }
+          }
+          dependencyResolutionManagement {
+              repositoriesMode.set(RepositoriesMode.FAIL_ON_PROJECT_REPOS)
+              repositories {
+                  google()
+                  mavenCentral()
+              }
+          }
+          rootProject.name = "SKY MAIL"
+          include(":app")
+          EOF
+
+          cat > build.gradle.kts <<'EOF'
+          plugins {
+              id("com.android.application") version "8.7.3" apply false
+          }
+          EOF
+
+          cat > app/build.gradle.kts <<'EOF'
+          plugins {
+              id("com.android.application")
+          }
+          android {
+              namespace = "com.sky.mail"
+              compileSdk = 35
+              defaultConfig {
+                  applicationId = "com.sky.mail"
+                  minSdk = 23
+                  targetSdk = 28
+                  versionCode = 1
+                  versionName = "1.0"
+              }
+          }
+          EOF
+
+          cat > app/src/main/AndroidManifest.xml <<'EOF'
+          <manifest xmlns:android="http://schemas.android.com/apk/res/android">
+              <application
+                  android:theme="@android:style/Theme.Material.Light.NoActionBar"
+                  android:label="SKY MAIL"
+                  android:usesCleartextTraffic="false">
+                  <activity
+                      android:name=".MainActivity"
+                      android:exported="true">
+                      <intent-filter>
+                          <action android:name="android.intent.action.MAIN"/>
+                          <category android:name="android.intent.category.LAUNCHER"/>
+                      </intent-filter>
+                  </activity>
+              </application>
+          </manifest>
+          EOF
+
+          cat > app/src/main/java/com/sky/mail/MainActivity.java <<'EOF'
+          package com.sky.mail;
+
+          import android.app.Activity;
+          import android.os.Bundle;
+          import android.graphics.Color;
+          import android.view.Gravity;
+          import android.widget.LinearLayout;
+          import android.widget.TextView;
+          import android.widget.Button;
+          import android.content.Intent;
+          import android.net.Uri;
+
+          public class MainActivity extends Activity {
+              int blue = Color.rgb(37, 99, 235);
+
+              @Override
+              public void onCreate(Bundle state) {
+                  super.onCreate(state);
+                  LinearLayout page = new LinearLayout(this);
+                  page.setOrientation(1);
+                  page.setPadding(36, 60, 36, 36);
+                  page.setBackgroundColor(Color.rgb(247, 249, 253));
+
+                  TextView title = new TextView(this);
+                  title.setText("✉ SKY MAIL");
+                  title.setTextSize(30);
+                  title.setTextColor(blue);
+                  title.setGravity(Gravity.CENTER);
+                  page.addView(title);
+
+                  TextView intro = new TextView(this);
+                  intro.setText("\nSemua email, satu tempat.\n");
+                  intro.setTextSize(20);
+                  intro.setTextColor(Color.DKGRAY);
+                  intro.setGravity(Gravity.CENTER);
+                  page.addView(intro);
+
+                  Button add = new Button(this);
+                  add.setText("Tambah / buat akun email");
+                  page.addView(add);
+                  add.setOnClickListener(v -> {
+                      Intent i = new Intent(Intent.ACTION_VIEW,
+                          Uri.parse("https://accounts.google.com/"));
+                      startActivity(i);
+                  });
+
+                  Button outlook = new Button(this);
+                  outlook.setText("Buka Outlook");
+                  page.addView(outlook);
+                  outlook.setOnClickListener(v -> {
+                      startActivity(new Intent(Intent.ACTION_VIEW,
+                          Uri.parse("https://outlook.live.com/")));
+                  });
+
+                  TextView note = new TextView(this);
+                  note.setText("\nVersi awal SKY MAIL\n" +
+                      "Gunakan login resmi penyedia email. " +
+                      "Integrasi inbox dalam satu tempat akan ditambahkan " +
+                      "pada tahap berikutnya.");
+                  note.setTextSize(15);
+                  note.setTextColor(Color.DKGRAY);
+                  page.addView(note);
+
+                  setContentView(page);
+              }
+          }
+          EOF
+
+      - name: Build APK
+        run: gradle --no-daemon assembleDebug
+
+      - name: Simpan APK
+        uses: actions/upload-artifact@v4
+        with:
+          name: SKY-MAIL-APK
+          path: app/build/outputs/apk/debug/app-debug.apk
+          if-no-files-found: error
+          
