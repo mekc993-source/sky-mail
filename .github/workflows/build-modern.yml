@@ -222,13 +222,40 @@ jobs:
                   Button personal = actionButton("Gmail Pribadi",
                           blue, Color.WHITE);
                   googleCard.addView(personal, lp(-1, -2));
-                  personal.setOnClickListener(v -> {
-                      Intent i = new 
-                  Intent(Intent.ACTION_VIEW,
                   
-                  Uri.parse("https://accounts.google.com/signup"));
-                      startActivity(i);
-                  });
+                  personal.setOnClickListener(v -> {
+                     new android.app.AlertDialog.Builder(this)
+                  .setTitle("Buat akun Gmail")
+                 .setMessage(
+                 "Siapkan data berikut sebelum melanjutkan:\n\n" +
+                 "1. Nama lengkap\n" +
+                 "2. Tanggal lahir\n" +
+                 "3. Username Gmail yang diinginkan\n" +
+                 "4. Kata sandi yang kuat\n\n" +
+                 "SKY MAIL akan membuka halaman resmi Google. " +
+                 "Ikuti langkah yang ditampilkan sampai akun selesai dibuat."
+                  )
+                 .setNegativeButton("Batal", (dialog, which) -> {
+            dialog.dismiss();
+                  })
+                 .setPositiveButton("Lanjut ke Google", (dialog, which) -> {
+            Intent i = new Intent(
+                Intent.ACTION_VIEW,
+                Uri.parse("https://accounts.google.com/signup")
+            );
+           startActivity(i);
+                  })
+                  .show();
+});
+
+
+    
+                      
+                  
+                  
+                  
+                      
+                  
 
                   Button child = actionButton("Gmail Anak",
                           Color.rgb(78, 133, 250), Color.WHITE);
