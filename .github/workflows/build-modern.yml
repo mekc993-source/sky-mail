@@ -170,7 +170,7 @@ jobs:
                   hero.setBackground(new GradientDrawable(
                       GradientDrawable.Orientation.TL_BR,
                       new int[] { blue, Color.rgb(78, 133, 250) }));
-                  hero.setCornerRadius(28);
+  
 
                   TextView logo = text("✉  SKY MAIL", 29, Color.WHITE, true);
                   logo.setGravity(Gravity.CENTER);
