@@ -221,7 +221,7 @@ jobs:
 
                   Button personal = actionButton("Gmail Pribadi",
                           blue, Color.WHITE);
-                  googleCard.addView(personal, lp(1, -2));
+                  googleCard.addView(personal, lp(-1, -2));
                   personal.setOnClickListener(v -> {
                       Intent i = new 
                   Intent(Intent.ACTION_VIEW,
@@ -232,8 +232,9 @@ jobs:
 
                   Button child = actionButton("Gmail Anak",
                           Color.rgb(78, 133, 250), Color.WHITE);
-                  LinearLayout.LayoutParams childLp =
-                  lp(1, -2);
+                  LinearLayout.LayoutParams childLp = 
+                  lp(-1, -2);
+                  
                   childLp.topMargin = 10;
                   googleCard.addView(child, childLp);
                   child.setOnClickListener(v -> {
