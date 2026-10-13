@@ -218,14 +218,27 @@ jobs:
                   subLp.bottomMargin = 10;
                   googleCard.addView(googleSub, subLp);
 
-                  Button add = actionButton("Tambah / buka akun Google", blue,
-                      Color.WHITE);
-                  googleCard.addView(add, lp(-1, -2));
-                  add.setOnClickListener(v -> {
-                      Intent i = new Intent(Intent.ACTION_VIEW,
-                          Uri.parse("https://accounts.google.com/"));
-                      startActivity(i);
+
+                  Button personal = actionButton("Gmail Pribadi",
+                  blue, Color.WHITE);
+                  googleCard.addView(personal, lp(1, -2));
+                  personal.setOnClickListener(v -> {
+                  Intent i = new Intent(Intent.ACTION_VIEW,
+                  Uri.parse("https://accounts.google.com/signup"));
+                  startActivity(i);
                   });
+
+                  Button child = actionButton("Gmail Anak",
+                  Color.rgb(78, 133, 250), Color.WHITE);
+                  LinearLayout.LayoutParams childLp = lp(1, -2);
+                  childLp.topMargin = 10;
+                  googleCard.addView(child, childLp);
+                  child.setOnClickListener(v -> {
+                  Intent i = new Intent(Intent.ACTION_VIEW,
+                  Uri.parse("https://families.google/intl/id/familylink/"));
+                  startActivity(i);
+                  });
+
                   page.addView(googleCard);
 
                   LinearLayout.LayoutParams outlookCardLp = lp(-1, -2);
